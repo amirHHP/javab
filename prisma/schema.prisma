@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Lab {
+  id            String    @id @default(cuid())
+  name          String
+  address       String?
+  phone         String?
+  logo          String?
+  licenseNumber String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  users         LabUser[]
+  patients      Patient[]
+  testOrders    TestOrder[]
+  testTemplates TestTemplate[]
+}
+
+model LabUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("technician") // admin, technician, doctor
+  labId     String
+  lab       Lab      @relation(fields: [labId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Patient {
+  id         String      @id @default(cuid())
+  nationalId String
+  firstName  String
+  lastName   String
+  phone      String?
+  gender     String?     // male, female
+  birthDate  DateTime?
+  bloodType  String?
+  labId      String
+  lab        Lab         @relation(fields: [labId], references: [id])
+  orders     TestOrder[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@unique([nationalId, labId])
+}
+
+model TestOrder {
+  id               String       @id @default(cuid())
+  shareToken       String       @unique
+  status           String       @default("pending") // pending, in_progress, completed, delivered
+  patientId        String
+  patient          Patient      @relation(fields: [patientId], references: [id])
+  labId            String
+  lab              Lab          @relation(fields: [labId], references: [id])
+  results          TestResult[]
+  aiInterpretation String?
+  doctorNote       String?
+  completedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model TestResult {
+  id            String    @id @default(cuid())
+  testName      String
+  testNameEn    String?
+  value         String?
+  unit          String?
+  normalRangeMin String?
+  normalRangeMax String?
+  status        String    @default("pending") // pending, normal, high, low, critical
+  category      String?
+  orderId       String
+  order         TestOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model TestTemplate {
+  id       String             @id @default(cuid())
+  name     String
+  nameEn   String?
+  category String?
+  labId    String
+  lab      Lab                @relation(fields: [labId], references: [id])
+  items    TestTemplateItem[]
+  createdAt DateTime          @default(now())
+}
+
+model TestTemplateItem {
+  id            String       @id @default(cuid())
+  testName      String
+  testNameEn    String?
+  unit          String?
+  normalRangeMin String?
+  normalRangeMax String?
+  templateId    String
+  template      TestTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  sortOrder     Int          @default(0)
+}
