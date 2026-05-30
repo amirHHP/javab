@@ -1,17 +1,18 @@
 import { requireAuth } from "@/lib/auth";
 import { logoutAction } from "@/actions/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default async function LabLayout({
+export default async function SuperAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const session = await requireAuth();
 
-  if (session.role === "super_admin") {
-    const { redirect } = await import("next/navigation");
-    redirect("/super-admin");
+  // Protect the route: Only allow super_admin role
+  if (session.role !== "super_admin") {
+    redirect("/dashboard");
   }
 
   return (
@@ -19,37 +20,25 @@ export default async function LabLayout({
       {/* Sidebar */}
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
-          <span style={styles.logo}>🧬</span>
+          <span style={styles.logo}>🛡️</span>
           <div>
-            <div style={styles.brandName}>جواب</div>
-            <div style={styles.labName}>{session.labName}</div>
+            <div style={styles.brandName}>مدیریت جواب</div>
+            <div style={styles.labName}>پنل مدیریت کل سیستم</div>
           </div>
         </div>
 
         <nav style={styles.nav}>
-          <Link href="/dashboard" style={styles.navLink}>
-            <span style={styles.navIcon}>📊</span>
-            داشبورد
+          <Link href="/super-admin" style={styles.navLink}>
+            <span style={styles.navIcon}>🏥</span>
+            آزمایشگاه‌ها
           </Link>
-          <Link href="/patients" style={styles.navLink}>
+          <Link href="/super-admin/users" style={styles.navLink}>
             <span style={styles.navIcon}>👥</span>
-            بیماران
+            کاربران سیستم
           </Link>
-          <Link href="/orders" style={styles.navLink}>
-            <span style={styles.navIcon}>🧪</span>
-            سفارش‌ها
-          </Link>
-          <Link href="/orders/new" style={styles.navLink}>
-            <span style={styles.navIcon}>➕</span>
-            سفارش جدید
-          </Link>
-          <Link href="/templates" style={styles.navLink}>
-            <span style={styles.navIcon}>📋</span>
-            تمپلیت‌ها
-          </Link>
-          <Link href="/settings" style={styles.navLink}>
-            <span style={styles.navIcon}>⚙️</span>
-            تنظیمات
+          <Link href="/" style={styles.navLink}>
+            <span style={styles.navIcon}>🏠</span>
+            صفحه اصلی سایت
           </Link>
         </nav>
 
@@ -58,13 +47,11 @@ export default async function LabLayout({
             <div style={styles.avatar}>{session.name[0]}</div>
             <div>
               <div style={styles.userName}>{session.name}</div>
-              <div style={styles.userRole}>
-                {session.role === "admin" ? "مدیر" : session.role === "doctor" ? "پزشک" : "تکنسین"}
-              </div>
+              <div style={styles.userRole}>مدیر کل سیستم</div>
             </div>
           </div>
           <form action={logoutAction}>
-            <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "#EF4444" }}>
+            <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "#FCA5A5" }}>
               خروج
             </button>
           </form>
@@ -86,7 +73,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sidebar: {
     width: "260px",
-    background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
+    background: "linear-gradient(180deg, #1E1B4B 0%, #311042 100%)", // Rich purple-indigo theme for admin
     color: "#E2E8F0",
     display: "flex",
     flexDirection: "column",
@@ -96,6 +83,7 @@ const styles: Record<string, React.CSSProperties> = {
     bottom: 0,
     zIndex: 100,
     overflowY: "auto",
+    borderLeft: "1px solid rgba(255,255,255,0.05)",
   },
   sidebarHeader: {
     padding: "1.5rem",
@@ -114,7 +102,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   labName: {
     fontSize: "0.75rem",
-    color: "#94A3B8",
+    color: "#C7D2FE",
   },
   nav: {
     flex: 1,
@@ -129,7 +117,7 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "0.75rem",
     padding: "0.75rem 1rem",
     borderRadius: "10px",
-    color: "#CBD5E1",
+    color: "#E0E7FF",
     textDecoration: "none",
     fontSize: "0.875rem",
     fontWeight: 500,
@@ -156,7 +144,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
-    background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
+    background: "linear-gradient(135deg, #818CF8, #C084FC)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -167,11 +155,11 @@ const styles: Record<string, React.CSSProperties> = {
   userName: {
     fontSize: "0.875rem",
     fontWeight: 600,
-    color: "#F1F5F9",
+    color: "#F8FAFC",
   },
   userRole: {
     fontSize: "0.7rem",
-    color: "#94A3B8",
+    color: "#C7D2FE",
   },
   main: {
     flex: 1,

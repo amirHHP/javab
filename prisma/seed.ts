@@ -6,6 +6,36 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  // Clean database to avoid duplicate key errors during seed runs
+  await prisma.testResult.deleteMany();
+  await prisma.testOrder.deleteMany();
+  await prisma.patient.deleteMany();
+  await prisma.testTemplateItem.deleteMany();
+  await prisma.testTemplate.deleteMany();
+  await prisma.labUser.deleteMany();
+  await prisma.lab.deleteMany();
+
+  // Create Super Admin Lab
+  const superLab = await prisma.lab.create({
+    data: {
+      name: "مدیریت سیستم",
+      address: "تهران، ستاد مرکزی",
+      phone: "02199999999",
+      licenseNumber: "SUPER-001",
+    },
+  });
+
+  // Create Super Admin user
+  await prisma.labUser.create({
+    data: {
+      email: "superadmin@javab.ir",
+      password: hashSync("superpassword", 10),
+      name: "مدیر کل سیستم",
+      role: "super_admin",
+      labId: superLab.id,
+    },
+  });
+
   // Create Lab
   const lab = await prisma.lab.create({
     data: {

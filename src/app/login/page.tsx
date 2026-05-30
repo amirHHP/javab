@@ -9,7 +9,13 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   const session = await getSession();
-  if (session) redirect("/dashboard");
+  if (session) {
+    if (session.role === "super_admin") {
+      redirect("/super-admin");
+    } else {
+      redirect("/dashboard");
+    }
+  }
 
   return (
     <div style={styles.container}>

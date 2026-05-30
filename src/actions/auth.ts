@@ -30,7 +30,11 @@ export async function loginAction(formData: FormData): Promise<void> {
     path: "/",
   });
 
-  redirect("/dashboard");
+  if (user.role === "super_admin") {
+    redirect("/super-admin");
+  } else {
+    redirect("/dashboard");
+  }
 }
 
 export async function logoutAction() {
